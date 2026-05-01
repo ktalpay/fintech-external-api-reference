@@ -17,6 +17,9 @@ External API documentation should be curated and published separately from inter
 ## External contract examples
 External API contracts should be documented separately from internal APIs. Each external contract should explicitly include required scope, company/resource boundary, error model, audit expectation, and rate-limit expectation.
 
+## Threat model
+The external API threat model maps boundary risks to controls such as company-scoped ownership, explicit scopes, audit logging, rate limiting, token lifecycle controls, idempotency, and webhook validation.
+
 ## Boundary between product modules and platform API
 Product/domain modules should execute business logic under a resolved company scope provided by the platform boundary. They should not independently infer external caller identity. This keeps authentication and authorization policies centralized and consistent.
 
