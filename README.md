@@ -44,12 +44,14 @@ This repository does not provide:
 - `docs/rate-limiting-and-abuse-detection.md` — layered rate limiting and abuse detection model
 - `docs/token-lifecycle-and-revocation.md` — lifecycle, rotation, and revocation model for external API keys
 - `docs/external-api-contract-examples.md` — external API contract examples for common fintech endpoints
+- `docs/threat-model.md` — structured threat model for company-scoped external API access
 - `docs/security-boundaries.md` — boundary and contract guidance
 - `docs/adr/0001-use-company-scoped-api-keys.md` — ADR for key architecture decision
 - `docs/adr/0002-use-append-only-audit-log-for-external-api-access.md` — ADR for external API audit logging
 - `docs/adr/0003-use-layered-rate-limiting-for-external-api-access.md` — ADR for external API rate limiting
 - `docs/adr/0004-use-explicit-token-lifecycle-and-revocation-model.md` — ADR for external API key lifecycle controls
 - `docs/adr/0005-use-explicit-external-api-contracts.md` — ADR for explicit external API contracts
+- `docs/adr/0006-use-threat-model-for-external-api-boundaries.md` — ADR for external API boundary threat modelling
 
 ## Core architecture principles
 
@@ -68,6 +70,7 @@ This repository does not provide:
 - Rate limiting and abuse detection model documented.
 - Token lifecycle and revocation model documented.
 - External API contract examples documented.
+- Threat model documented.
 - No application code included in this stage.
 
 ## Disclaimer
