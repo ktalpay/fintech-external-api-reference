@@ -61,6 +61,7 @@ Additional documentation from earlier milestones remains available under `docs/`
 - [Scopes](docs/scopes/index.md)
 - [Architecture decision records](docs/adr/README.md)
 - [Examples](examples/README.md)
+- [Minimal external OpenAPI sample](examples/openapi/external-api.sample.yaml)
 
 ## Non-Goals
 
