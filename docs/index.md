@@ -13,7 +13,8 @@ Recommended reading order:
 8. Token lifecycle and revocation
 9. External API contract examples
 10. Threat model
-11. Architecture decision records
+11. Review checklist
+12. Architecture decision records
 
 ## Core architecture documents
 
@@ -29,6 +30,7 @@ Recommended reading order:
 | `docs/token-lifecycle-and-revocation.md` | Token issuance, expiry, rotation, suspension, revocation, and last-used tracking. | Read when designing API key operations. |
 | `docs/external-api-contract-examples.md` | Example endpoint contracts and error conventions. | Read when documenting externally visible endpoints. |
 | `docs/threat-model.md` | Threat scenarios, controls, residual risks, and monitoring signals. | Read during security review or release readiness review. |
+| `docs/review-checklist.md` | Implementation-neutral readiness checklist. | Use for endpoint readiness review before exposure or major contract changes. |
 
 ## Architecture decision records
 
@@ -40,6 +42,7 @@ Recommended reading order:
 | `docs/adr/0004-use-explicit-token-lifecycle-and-revocation-model.md` | Use explicit token lifecycle and revocation controls. | Token operations and incident response. |
 | `docs/adr/0005-use-explicit-external-api-contracts.md` | Use explicit external API contracts. | External endpoint documentation. |
 | `docs/adr/0006-use-threat-model-for-external-api-boundaries.md` | Maintain a threat model for external API boundaries. | Security review and residual risk. |
+| `docs/adr/0010-use-review-checklist-for-external-api-readiness.md` | Use a review checklist for external API readiness. | Endpoint readiness and cross-cutting control review. |
 
 ## Suggested reviewer checklist
 

@@ -53,6 +53,7 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 | `docs/error-code-reference.md` | Stable client-facing error codes, status mapping, retry guidance, and audit expectations. |
 | `docs/webhook-delivery-model.md` | Signed, company-scoped webhook delivery model with retries and failure handling. |
 | `docs/threat-model.md` | Threat scenarios, control mapping, residual risk, and monitoring signals. |
+| `docs/review-checklist.md` | Implementation-neutral checklist for external API readiness review. |
 | `docs/adr/0001-use-company-scoped-api-keys.md` | Decision to use company-scoped API keys for external API access. |
 | `docs/adr/0002-use-append-only-audit-log-for-external-api-access.md` | Decision to use append-only audit events for external API access. |
 | `docs/adr/0003-use-layered-rate-limiting-for-external-api-access.md` | Decision to use layered rate limiting for external API access. |
@@ -62,6 +63,7 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 | `docs/adr/0007-use-signed-webhook-delivery-model.md` | Decision to use signed webhook delivery for company-scoped external events. |
 | `docs/adr/0008-use-stable-external-error-codes.md` | Decision to use stable external error codes. |
 | `docs/adr/0009-use-integration-guide-for-external-api-onboarding.md` | Decision to use an integration guide for external API onboarding. |
+| `docs/adr/0010-use-review-checklist-for-external-api-readiness.md` | Decision to use a review checklist for external API readiness. |
 | `docs/release-notes/v0.1.0.md` | Release notes for the v0.1.0 documentation milestone. |
 
 ## Architecture principles
@@ -87,6 +89,8 @@ Webhook delivery model documented after the v0.1.0 milestone.
 Error code reference documented after the v0.1.0 milestone.
 
 Integration guide documented after the v0.1.0 milestone.
+
+Review checklist documented after the v0.1.0 milestone.
 
 ## Non-goals
 
