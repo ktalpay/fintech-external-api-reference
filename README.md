@@ -40,8 +40,10 @@ This repository does not provide:
 - `docs/architecture-overview.md` — high-level architecture and request flow
 - `docs/company-scoped-api-key-model.md` — ownership and token model details
 - `docs/scope-and-permission-model.md` — external scope naming, evaluation rules, and endpoint permissions
+- `docs/audit-log-model.md` — append-only audit event model for external API access
 - `docs/security-boundaries.md` — boundary and contract guidance
 - `docs/adr/0001-use-company-scoped-api-keys.md` — ADR for key architecture decision
+- `docs/adr/0002-use-append-only-audit-log-for-external-api-access.md` — ADR for external API audit logging
 
 ## Core architecture principles
 
@@ -56,6 +58,7 @@ This repository does not provide:
 - Initial documentation baseline established.
 - Architecture framing and first ADR completed.
 - Scope and permission model documented.
+- Audit log model documented.
 - No application code included in this stage.
 
 ## Disclaimer
