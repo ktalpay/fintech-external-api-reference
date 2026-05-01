@@ -1,78 +1,90 @@
 # fintech-external-api-reference
 
+## Short description
+
 Reference architecture documentation for secure, company-scoped external API access in fintech platforms.
 
-## Problem addressed
+## What this repository covers
 
-Fintech platforms frequently expose APIs to partners, aggregators, and enterprise customers. Without explicit external security boundaries and company-scoped authorization, these integrations can introduce tenant data leakage, excessive token privileges, weak auditability, and hard-to-revoke access paths.
+This repository documents a practical external API reference architecture focused on:
+- company-scoped API key ownership,
+- scope and permission model,
+- audit logging,
+- rate limiting and abuse detection,
+- token lifecycle and revocation,
+- external API contract examples,
+- threat model,
+- security boundaries,
+- architecture decision records.
 
-This repository defines a practical reference architecture to reduce those risks while keeping integration patterns straightforward for product teams.
+## Why this matters
+
+External fintech APIs expose sensitive operational boundaries. A partner or customer integration may be outside direct runtime control, but it can still trigger account queries, payment workflows, webhook delivery, and support investigations.
+
+Tenant isolation must be explicit. External access should resolve company context from platform-owned token metadata, not caller-provided identifiers.
+
+External contracts should not expose internal APIs. They need stable behavior, documented scopes, clear error semantics, audit expectations, and rate-limit expectations.
+
+Auditability, revocation, and rate limiting are part of the architecture, not afterthoughts. They help reduce blast radius, support incident investigation, and make external access decisions explainable.
 
 ## Intended audience
 
-- Staff+ engineers and solution architects designing platform APIs
-- Security engineers reviewing external access models
-- Product and engineering leaders aligning API design with operational controls
-- Technical due diligence reviewers evaluating architecture maturity
+- Backend/platform engineers
+- Software architects
+- Security engineers
+- Fintech product engineering teams
+- Technical reviewers evaluating external API design maturity
 
-## Scope
+## Documentation map
 
-This repository covers:
+| Document | Purpose |
+|---|---|
+| `docs/index.md` | Structured documentation index, reading path, ADR map, and reviewer checklist. |
+| `docs/problem-statement.md` | External API risk framing and common failure modes. |
+| `docs/architecture-overview.md` | High-level architecture, actors, and request flow. |
+| `docs/security-boundaries.md` | Separation between internal and external API surfaces. |
+| `docs/company-scoped-api-key-model.md` | Company ownership and API key identity model. |
+| `docs/scope-and-permission-model.md` | Endpoint-level scopes, permissions, and resource boundaries. |
+| `docs/audit-log-model.md` | Append-only audit event model for external API access. |
+| `docs/rate-limiting-and-abuse-detection.md` | Layered rate limiting and abuse detection model. |
+| `docs/token-lifecycle-and-revocation.md` | Token issuance, expiry, rotation, suspension, revocation, and last-used tracking. |
+| `docs/external-api-contract-examples.md` | Example external endpoint contracts for common fintech use cases. |
+| `docs/threat-model.md` | Threat scenarios, control mapping, residual risk, and monitoring signals. |
+| `docs/adr/0001-use-company-scoped-api-keys.md` | Decision to use company-scoped API keys for external API access. |
+| `docs/adr/0002-use-append-only-audit-log-for-external-api-access.md` | Decision to use append-only audit events for external API access. |
+| `docs/adr/0003-use-layered-rate-limiting-for-external-api-access.md` | Decision to use layered rate limiting for external API access. |
+| `docs/adr/0004-use-explicit-token-lifecycle-and-revocation-model.md` | Decision to use explicit token lifecycle and revocation controls. |
+| `docs/adr/0005-use-explicit-external-api-contracts.md` | Decision to document external APIs as explicit contracts. |
+| `docs/adr/0006-use-threat-model-for-external-api-boundaries.md` | Decision to maintain a threat model for external API boundaries. |
+| `docs/release-notes/v0.1.0.md` | Release notes for the v0.1.0 documentation milestone. |
 
-- External API boundary design for fintech contexts
-- Company-scoped API key ownership and request authorization model
-- Authorization and audit control points in request handling
-- Documentation and decision records for architecture governance
+## Architecture principles
+
+1. **Company-scoped authorization**: access decisions resolve company context from token ownership metadata.
+2. **Least privilege**: external scopes should map narrowly to integration use cases.
+3. **Deny by default**: unknown endpoints, missing scopes, invalid tokens, and company-boundary mismatches are denied.
+4. **Explicit external contracts**: external endpoints document method, path, scope, boundary, request/response shape, errors, audit behavior, and rate-limit behavior.
+5. **Separation of internal and external API surfaces**: internal service APIs are not treated as external contracts.
+6. **Auditability by design**: important authentication, authorization, lifecycle, rate-limit, and sensitive-operation decisions are traceable.
+7. **Request-time lifecycle enforcement**: expired, revoked, and suspended tokens fail during request authorization.
+8. **Layered rate limiting**: limits account for token, company, endpoint, operation type, and abuse signals.
+9. **Sensitive data minimization**: responses, logs, audit events, and metadata avoid unnecessary sensitive payload details.
+
+## Current status
+
+v0.1.0 release candidate documentation set.
+
+This repository is a documentation-only reference architecture. It contains no application code, no production implementation, and no legal/compliance advice.
 
 ## Non-goals
 
 This repository does not provide:
-
-- Production-ready application code
-- Legal or regulatory interpretation
-- Cloud-vendor-specific deployment blueprints
-- Full zero-trust or IAM program design
-
-## Repository structure
-
-- `README.md` — project framing, scope, and principles
-- `docs/problem-statement.md` — external API risk framing and failure modes
-- `docs/architecture-overview.md` — high-level architecture and request flow
-- `docs/company-scoped-api-key-model.md` — ownership and token model details
-- `docs/scope-and-permission-model.md` — external scope naming, evaluation rules, and endpoint permissions
-- `docs/audit-log-model.md` — append-only audit event model for external API access
-- `docs/rate-limiting-and-abuse-detection.md` — layered rate limiting and abuse detection model
-- `docs/token-lifecycle-and-revocation.md` — lifecycle, rotation, and revocation model for external API keys
-- `docs/external-api-contract-examples.md` — external API contract examples for common fintech endpoints
-- `docs/threat-model.md` — structured threat model for company-scoped external API access
-- `docs/security-boundaries.md` — boundary and contract guidance
-- `docs/adr/0001-use-company-scoped-api-keys.md` — ADR for key architecture decision
-- `docs/adr/0002-use-append-only-audit-log-for-external-api-access.md` — ADR for external API audit logging
-- `docs/adr/0003-use-layered-rate-limiting-for-external-api-access.md` — ADR for external API rate limiting
-- `docs/adr/0004-use-explicit-token-lifecycle-and-revocation-model.md` — ADR for external API key lifecycle controls
-- `docs/adr/0005-use-explicit-external-api-contracts.md` — ADR for explicit external API contracts
-- `docs/adr/0006-use-threat-model-for-external-api-boundaries.md` — ADR for external API boundary threat modelling
-
-## Core architecture principles
-
-1. **Company-scoped authorization is mandatory**: access decisions resolve from token ownership, not caller-provided tenant identifiers.
-2. **External and internal interfaces are separate products**: each has distinct contracts, controls, and lifecycle.
-3. **Least privilege by default**: scopes and permissions should map narrowly to external use cases.
-4. **Auditability is a first-class requirement**: external calls generate attributable, queryable audit events.
-5. **Revocation must be operationally reliable**: access removal is quick, explicit, and observable.
-
-## Current status
-
-- Initial documentation baseline established.
-- Architecture framing and first ADR completed.
-- Scope and permission model documented.
-- Audit log model documented.
-- Rate limiting and abuse detection model documented.
-- Token lifecycle and revocation model documented.
-- External API contract examples documented.
-- Threat model documented.
-- No application code included in this stage.
+- production-ready implementation,
+- legal/regulatory interpretation,
+- cloud-vendor-specific deployment,
+- full IAM or zero-trust program,
+- complete fraud detection model.
 
 ## Disclaimer
 
-This repository is a reference architecture artifact. It is not production-ready legal, compliance, risk, or security advice. Teams should validate all controls against their own regulatory obligations, threat model, and operating environment.
+This repository is a reference architecture artifact. It is not production-ready legal, compliance, risk, or security advice.
