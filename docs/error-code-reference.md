@@ -36,7 +36,7 @@ This reference defines stable error semantics. `docs/integration-guide.md` descr
 - Replacing audit logs.
 - Replacing support processes.
 - Defining legal/compliance obligations.
-- Providing production-ready code.
+- Providing implementation code.
 
 ## Error response shape
 Conceptual response:

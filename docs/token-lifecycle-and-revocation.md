@@ -45,7 +45,7 @@ Token ownership must remain tied to one company. Lifecycle operations should not
 - Implementing OAuth/OIDC.
 - Defining vendor-specific secret storage.
 - Defining legal retention requirements.
-- Providing production-ready code.
+- Providing implementation code.
 
 ## Token states
 | State | Meaning | Requests allowed? | Typical transition into state | Typical transition out of state |

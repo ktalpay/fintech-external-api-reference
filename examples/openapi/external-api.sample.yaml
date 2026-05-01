@@ -1,0 +1,319 @@
+openapi: 3.0.3
+info:
+  title: External Fintech API Sample
+  version: 1.0.0
+  description: Minimal illustrative external API contract for company-scoped API key access.
+servers:
+  - url: https://api.example.com
+    description: Example external API host
+security:
+  - ApiKeyAuth: []
+tags:
+  - name: Banks
+  - name: Accounts
+  - name: Payments
+paths:
+  /external/v1/banks:
+    get:
+      tags:
+        - Banks
+      summary: List supported banks
+      description: Returns banks available to the resolved company scope.
+      operationId: listExternalBanks
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Supported banks returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Bank"
+              example:
+                data:
+                  - id: bank_demo_001
+                    name: Example Bank
+                    country: GB
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /external/v1/accounts:
+    get:
+      tags:
+        - Accounts
+      summary: List accounts
+      description: Returns accounts belonging to the resolved company scope.
+      operationId: listExternalAccounts
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Accounts returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Account"
+              example:
+                data:
+                  - id: acct_demo_001
+                    bank_id: bank_demo_001
+                    currency: GBP
+                    status: active
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /external/v1/payments:
+    post:
+      tags:
+        - Payments
+      summary: Create a payment request
+      description: Creates a payment request inside the resolved company scope.
+      operationId: createExternalPayment
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentRequest"
+            example:
+              source_account_id: acct_demo_001
+              amount:
+                currency: GBP
+                value: "25.00"
+              reference: invoice-1001
+      responses:
+        "201":
+          description: Payment request created.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Payment"
+              example:
+                data:
+                  id: pay_demo_001
+                  source_account_id: acct_demo_001
+                  amount:
+                    currency: GBP
+                    value: "25.00"
+                  reference: invoice-1001
+                  status: pending
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: Platform-issued API key. The platform resolves company scope from token metadata.
+  responses:
+    Unauthorized:
+      description: Missing, invalid, revoked, or expired API key.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            missingApiKey:
+              summary: Missing API key
+              value:
+                error:
+                  code: missing_api_key
+                  message: API key is required.
+                  correlation_id: req_01HZXAMPLE000000000000001
+            expiredApiKey:
+              summary: Expired API key
+              value:
+                error:
+                  code: expired_api_key
+                  message: API key is not valid for this request.
+                  correlation_id: req_01HZXAMPLE000000000000002
+    Forbidden:
+      description: API key is valid but does not have the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            missingScope:
+              summary: Missing scope
+              value:
+                error:
+                  code: missing_scope
+                  message: API key does not have permission to access this endpoint.
+                  correlation_id: req_01HZXAMPLE000000000000003
+    TooManyRequests:
+      description: Rate limit exceeded.
+      headers:
+        Retry-After:
+          description: Minimum number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+          example: 30
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            rateLimited:
+              summary: Too many requests
+              value:
+                error:
+                  code: rate_limit_exceeded
+                  message: Too many requests. Retry after the indicated interval.
+                  correlation_id: req_01HZXAMPLE000000000000004
+  schemas:
+    Bank:
+      type: object
+      required:
+        - id
+        - name
+        - country
+      properties:
+        id:
+          type: string
+          example: bank_demo_001
+        name:
+          type: string
+          example: Example Bank
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: GB
+    Account:
+      type: object
+      required:
+        - id
+        - bank_id
+        - currency
+        - status
+      properties:
+        id:
+          type: string
+          example: acct_demo_001
+        bank_id:
+          type: string
+          example: bank_demo_001
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: GBP
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+          example: active
+    CreatePaymentRequest:
+      type: object
+      required:
+        - source_account_id
+        - amount
+        - reference
+      properties:
+        source_account_id:
+          type: string
+          example: acct_demo_001
+        amount:
+          $ref: "#/components/schemas/Money"
+        reference:
+          type: string
+          maxLength: 140
+          example: invoice-1001
+    Payment:
+      type: object
+      required:
+        - id
+        - source_account_id
+        - amount
+        - reference
+        - status
+      properties:
+        id:
+          type: string
+          example: pay_demo_001
+        source_account_id:
+          type: string
+          example: acct_demo_001
+        amount:
+          $ref: "#/components/schemas/Money"
+        reference:
+          type: string
+          example: invoice-1001
+        status:
+          type: string
+          enum:
+            - pending
+            - accepted
+            - rejected
+          example: pending
+    Money:
+      type: object
+      required:
+        - currency
+        - value
+      properties:
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: GBP
+        value:
+          type: string
+          pattern: "^\\d+\\.\\d{2}$"
+          example: "25.00"
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+            - correlation_id
+          properties:
+            code:
+              type: string
+              example: missing_scope
+            message:
+              type: string
+              example: API key does not have permission to access this endpoint.
+            correlation_id:
+              type: string
+              example: req_01HZXAMPLE000000000000003
