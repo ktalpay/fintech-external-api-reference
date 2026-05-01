@@ -11,7 +11,7 @@ This model centralizes external authorization controls and reduces the chance th
 - **External API surface**: stable, documented contract intended for external consumption.
 - **Token registry**: authoritative store of token hash, ownership, status, and lifecycle metadata.
 - **Scope/permission evaluator**: policy component that validates token scopes against endpoint/action requirements. The scope and permission model defines required endpoint scopes, deny-by-default behavior, resource boundaries, and audit expectations.
-- **Audit log**: append-only event stream/store for authentication, authorization, and data-access events.
+- **Audit log**: append-only event stream/store for authentication, authorization, company/resource boundary decisions, sensitive operations, and rate-limit outcomes.
 - **Product/domain services**: internal services that execute business operations under resolved company scope.
 
 ## Request flow
