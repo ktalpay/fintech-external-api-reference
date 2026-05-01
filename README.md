@@ -49,6 +49,7 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 | `docs/rate-limiting-and-abuse-detection.md` | Layered rate limiting and abuse detection model. |
 | `docs/token-lifecycle-and-revocation.md` | Token issuance, expiry, rotation, suspension, revocation, and last-used tracking. |
 | `docs/external-api-contract-examples.md` | Example external endpoint contracts for common fintech use cases. |
+| `docs/webhook-delivery-model.md` | Signed, company-scoped webhook delivery model with retries and failure handling. |
 | `docs/threat-model.md` | Threat scenarios, control mapping, residual risk, and monitoring signals. |
 | `docs/adr/0001-use-company-scoped-api-keys.md` | Decision to use company-scoped API keys for external API access. |
 | `docs/adr/0002-use-append-only-audit-log-for-external-api-access.md` | Decision to use append-only audit events for external API access. |
@@ -56,6 +57,7 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 | `docs/adr/0004-use-explicit-token-lifecycle-and-revocation-model.md` | Decision to use explicit token lifecycle and revocation controls. |
 | `docs/adr/0005-use-explicit-external-api-contracts.md` | Decision to document external APIs as explicit contracts. |
 | `docs/adr/0006-use-threat-model-for-external-api-boundaries.md` | Decision to maintain a threat model for external API boundaries. |
+| `docs/adr/0007-use-signed-webhook-delivery-model.md` | Decision to use signed webhook delivery for company-scoped external events. |
 | `docs/release-notes/v0.1.0.md` | Release notes for the v0.1.0 documentation milestone. |
 
 ## Architecture principles
@@ -75,6 +77,8 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 v0.1.0 release candidate documentation set.
 
 This repository is a documentation-only reference architecture. It contains no application code, no production implementation, and no legal/compliance advice.
+
+Webhook delivery model documented after the v0.1.0 milestone.
 
 ## Non-goals
 

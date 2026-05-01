@@ -365,6 +365,11 @@ Security notes:
 - Internal callbacks or private network targets should not be allowed unless explicitly controlled by platform policy.
 - Webhook management actions should remain company-scoped.
 
+## Webhook delivery
+Webhook registration is only one part of the model. Actual delivery should use signed, company-scoped, minimal event payloads with bounded retries and auditable outcomes.
+
+Event schemas should be documented as part of the external product surface. Clients should not rely on internal event names or undocumented payload fields.
+
 ## Idempotency guidance
 Write operations should support idempotency. Payment creation should require `Idempotency-Key`.
 
