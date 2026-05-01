@@ -65,6 +65,7 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 | `docs/adr/0009-use-integration-guide-for-external-api-onboarding.md` | Decision to use an integration guide for external API onboarding. |
 | `docs/adr/0010-use-review-checklist-for-external-api-readiness.md` | Decision to use a review checklist for external API readiness. |
 | `docs/release-notes/v0.1.0.md` | Release notes for the v0.1.0 documentation milestone. |
+| `docs/release-notes/v0.2.0.md` | Release notes for the v0.2.0 documentation milestone. |
 
 ## Architecture principles
 
@@ -80,17 +81,11 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 
 ## Current status
 
-v0.1.0 release candidate documentation set.
+v0.2.0 release candidate documentation set.
 
 This repository is a documentation-only reference architecture. It contains no application code, no production implementation, and no legal/compliance advice.
 
-Webhook delivery model documented after the v0.1.0 milestone.
-
-Error code reference documented after the v0.1.0 milestone.
-
-Integration guide documented after the v0.1.0 milestone.
-
-Review checklist documented after the v0.1.0 milestone.
+The documentation set now includes integration readiness material: webhook delivery, error code reference, integration guide, and review checklist.
 
 ## Non-goals
 

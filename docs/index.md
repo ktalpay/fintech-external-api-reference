@@ -59,4 +59,8 @@ Recommended reading order:
 
 ## Repository status
 
-v0.1.0 release candidate documentation set.
+v0.2.0 release candidate documentation set.
+
+Release notes:
+- `docs/release-notes/v0.1.0.md`
+- `docs/release-notes/v0.2.0.md`
