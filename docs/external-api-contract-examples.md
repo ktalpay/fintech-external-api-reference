@@ -26,6 +26,9 @@ Support and security teams need predictable error and audit behavior. Clear cont
 
 Endpoint examples make the architecture reviewable without adding application code.
 
+## Integration guide
+Endpoint contracts describe individual API behavior. `docs/integration-guide.md` describes cross-cutting client integration expectations such as authentication, idempotency, rate limits, error handling, webhooks, and token lifecycle.
+
 ## Contract documentation template
 - **Endpoint**: route template, such as `/external/v1/payments/{paymentId}`.
 - **Method**: HTTP method.

@@ -49,6 +49,7 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 | `docs/rate-limiting-and-abuse-detection.md` | Layered rate limiting and abuse detection model. |
 | `docs/token-lifecycle-and-revocation.md` | Token issuance, expiry, rotation, suspension, revocation, and last-used tracking. |
 | `docs/external-api-contract-examples.md` | Example external endpoint contracts for common fintech use cases. |
+| `docs/integration-guide.md` | Implementation-neutral guidance for external API consumers. |
 | `docs/error-code-reference.md` | Stable client-facing error codes, status mapping, retry guidance, and audit expectations. |
 | `docs/webhook-delivery-model.md` | Signed, company-scoped webhook delivery model with retries and failure handling. |
 | `docs/threat-model.md` | Threat scenarios, control mapping, residual risk, and monitoring signals. |
@@ -60,6 +61,7 @@ Auditability, revocation, and rate limiting are part of the architecture, not af
 | `docs/adr/0006-use-threat-model-for-external-api-boundaries.md` | Decision to maintain a threat model for external API boundaries. |
 | `docs/adr/0007-use-signed-webhook-delivery-model.md` | Decision to use signed webhook delivery for company-scoped external events. |
 | `docs/adr/0008-use-stable-external-error-codes.md` | Decision to use stable external error codes. |
+| `docs/adr/0009-use-integration-guide-for-external-api-onboarding.md` | Decision to use an integration guide for external API onboarding. |
 | `docs/release-notes/v0.1.0.md` | Release notes for the v0.1.0 documentation milestone. |
 
 ## Architecture principles
@@ -83,6 +85,8 @@ This repository is a documentation-only reference architecture. It contains no a
 Webhook delivery model documented after the v0.1.0 milestone.
 
 Error code reference documented after the v0.1.0 milestone.
+
+Integration guide documented after the v0.1.0 milestone.
 
 ## Non-goals
 

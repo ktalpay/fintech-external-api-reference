@@ -16,6 +16,9 @@ This reference covers:
 
 Error codes do not replace audit logging, monitoring, or operational investigation. They provide a stable client-facing contract while internal diagnostics remain separate.
 
+## Integration guide
+This reference defines stable error semantics. `docs/integration-guide.md` describes how clients should handle these errors operationally across authentication, idempotency, rate limits, webhooks, token lifecycle, and support workflows.
+
 ## Design goals
 - **Stable client-facing error codes**: clients can build predictable handling logic.
 - **Consistent HTTP status mapping**: similar failures use the same status and error code.
