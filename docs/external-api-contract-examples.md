@@ -91,6 +91,9 @@ Example:
 }
 ```
 
+## Error code reference
+This document includes example endpoint error behavior. `docs/error-code-reference.md` is the canonical reference for stable client-facing error codes, HTTP status mapping, retry guidance, and audit expectations.
+
 ## Example contract: List banks
 - **Endpoint**: `/external/v1/banks`
 - **Method**: `GET`
