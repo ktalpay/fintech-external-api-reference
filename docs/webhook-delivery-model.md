@@ -46,7 +46,7 @@ Webhook abuse can create operational risk. High registration churn, unsafe targe
 - Defining a full event streaming platform.
 - Defining vendor-specific queue infrastructure.
 - Storing sensitive full payloads in delivery logs.
-- Providing production-ready code.
+- Providing implementation code.
 
 ## Core concepts
 - **Webhook subscription**: a company-owned registration that connects event types to a client endpoint.

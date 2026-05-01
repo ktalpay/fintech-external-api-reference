@@ -22,7 +22,7 @@ Together, these controls prevent cross-tenant access and reduce the blast radius
 - Modelling every internal role.
 - Implementing OAuth/OIDC.
 - Defining legal/compliance obligations.
-- Providing production-ready code.
+- Providing implementation code.
 
 ## Core concepts
 - **Company ownership**: the tenant relationship recorded when a token is issued. The token belongs to exactly one company.

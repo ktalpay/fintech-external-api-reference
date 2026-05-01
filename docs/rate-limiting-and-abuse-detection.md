@@ -39,7 +39,7 @@ Operational teams need clear throttling signals. Throttled requests should be di
 - Replacing fraud detection.
 - Defining commercial pricing tiers.
 - Implementing a complete traffic-shaping system.
-- Providing production-ready code.
+- Providing implementation code.
 - Defining legal retention/compliance policy.
 
 ## Core concepts

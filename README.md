@@ -27,6 +27,7 @@ This repository describes a reference model where:
 |---|---|
 | API key | A platform-issued credential used by an external client. |
 | Token hash | The stored representation of an API key token. Raw tokens are displayed once and are not stored. |
+| Key prefix | A non-secret API key identifier used for lookup, support, and audit correlation. |
 | Company scope | The company ownership context resolved from API key metadata. |
 | External client | A system outside the platform boundary that calls the external API. |
 | External API contract | A curated, stable API surface intended for external clients. |

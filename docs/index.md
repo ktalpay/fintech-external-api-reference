@@ -77,7 +77,7 @@ Recommended reading order:
 - [ ] Are expired, revoked, and suspended tokens denied at request time?
 - [ ] Are rate limits applied by token, company, endpoint, and operation type where appropriate?
 - [ ] Are write operations idempotent where needed?
-- [ ] Are internal APIs separated from external contracts?
+- [ ] Are internal APIs separated from external API contracts?
 - [ ] Are threat scenarios mapped to controls?
 
 ## Repository status

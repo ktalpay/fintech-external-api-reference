@@ -10,4 +10,9 @@ Architecture decision records explain why key external API architecture choices 
 
 ## Existing Decision Records
 
-Earlier ADRs in this repository remain available in this directory and describe related decisions about audit logging, rate limiting, token lifecycle, external contracts, threat modeling, webhook delivery, error codes, integration guidance, and review readiness.
+This repository currently contains two ADR sequences:
+
+- the short initial sequence above, added for the public reference architecture foundation;
+- the earlier `0001-use-...` sequence, which remains valid and covers related decisions in more detail.
+
+The sequences overlap on company-scoped API keys and external contract separation, but they do not conflict. The short initial ADRs summarize foundational decisions, while the earlier ADRs preserve the existing milestone history and deeper supporting decisions about audit logging, rate limiting, token lifecycle, threat modeling, webhook delivery, error codes, integration guidance, and review readiness.
