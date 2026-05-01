@@ -42,10 +42,12 @@ This repository does not provide:
 - `docs/scope-and-permission-model.md` — external scope naming, evaluation rules, and endpoint permissions
 - `docs/audit-log-model.md` — append-only audit event model for external API access
 - `docs/rate-limiting-and-abuse-detection.md` — layered rate limiting and abuse detection model
+- `docs/token-lifecycle-and-revocation.md` — lifecycle, rotation, and revocation model for external API keys
 - `docs/security-boundaries.md` — boundary and contract guidance
 - `docs/adr/0001-use-company-scoped-api-keys.md` — ADR for key architecture decision
 - `docs/adr/0002-use-append-only-audit-log-for-external-api-access.md` — ADR for external API audit logging
 - `docs/adr/0003-use-layered-rate-limiting-for-external-api-access.md` — ADR for external API rate limiting
+- `docs/adr/0004-use-explicit-token-lifecycle-and-revocation-model.md` — ADR for external API key lifecycle controls
 
 ## Core architecture principles
 
@@ -62,6 +64,7 @@ This repository does not provide:
 - Scope and permission model documented.
 - Audit log model documented.
 - Rate limiting and abuse detection model documented.
+- Token lifecycle and revocation model documented.
 - No application code included in this stage.
 
 ## Disclaimer

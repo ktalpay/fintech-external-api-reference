@@ -13,7 +13,7 @@ Key metadata should include:
 - last-used timestamp.
 
 ## Token generation
-Tokens should be generated with high entropy from a cryptographically secure source. Token presentation format can be human-manageable, but entropy and unpredictability are security-critical.
+Tokens should be created with high entropy from a cryptographically secure source. Token presentation format can be human-manageable, but entropy and unpredictability are security-critical.
 
 ## Token hashing
 Raw API keys should not be stored in plaintext. Persist a one-way hash or equivalent fingerprint representation suitable for lookup and verification.
@@ -40,6 +40,11 @@ Revocation should be immediate from the authorization perspective. Once revoked,
 
 ## Last-used tracking
 Update last-used metadata on successful authentication/authorization attempts (or with clearly defined policy) to support security monitoring, key rotation programs, and incident response.
+
+## Token lifecycle and revocation
+Company ownership, lifecycle state, expiry, revocation, and scopes are separate checks that all contribute to authorization decisions.
+
+A token can belong to a company and still be denied because it is expired, revoked, suspended, or missing the required scope. Likewise, an active token with the right scope must still be evaluated within the owning company boundary.
 
 ## Do not trust incoming companyId with API key auth
 When `X-Api-Key` is the authentication mechanism, caller-provided `companyId` fields in path/query/body are untrusted for authorization purposes. They may be accepted as business parameters only if they match platform-resolved ownership and endpoint rules.
