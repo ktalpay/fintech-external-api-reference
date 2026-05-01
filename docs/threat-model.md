@@ -50,7 +50,7 @@ Out of scope:
 | External API layer to product/domain services | Resolved company context, validated request, resource references. | Downstream service trusting caller-provided company context. | Platform-resolved company context and company-scoped product queries. |
 | Product/domain services to audit log | Access decision, resource reference, request/correlation IDs, lifecycle events. | Missing audit trail or sensitive data in audit fields. | Append-only audit events and sensitive data minimization. |
 | External API layer to rate-limit store | Counter keys, request classification, token/company/endpoint usage. | Unfair throttling or bypass due to weak keys. | Layered counters by token, company, endpoint, operation, and deny patterns. |
-| Platform to webhook target | Outbound callback request and event payload. | Unsafe destination, data leakage, callback abuse. | Webhook target validation, company-scoped events, retry controls, audit events. |
+| Platform to webhook target | Outbound callback request and event payload. | Unsafe destination, spoofed delivery, data leakage, callback abuse. | Webhook target validation, signed company-scoped events, retry controls, audit events. |
 
 ## Threat categories
 - **Spoofing**: an actor attempts to appear as a valid external client by using a stolen, guessed, expired, or revoked API key.
@@ -71,7 +71,7 @@ Out of scope:
 | T06 | Internal API endpoint is accidentally exposed externally | Information disclosure | Internal fields or privileged actions become reachable. | External client to API gateway / edge boundary | Separate internal/external surfaces and explicit contracts. | Routing errors remain possible. | External traffic to unknown or internal route pattern. |
 | T07 | Payment creation endpoint is repeatedly called due to retry loop | Denial of service | Duplicate attempts and downstream pressure. | External API layer to product/domain services | Idempotency, write-operation limits, audit events. | Client retry behavior can still be defective. | Repeated idempotency keys or payment create throttles. |
 | T08 | Payment status endpoint is aggressively polled | Denial of service | Excessive read load and noisy client behavior. | External API layer to rate-limit store | Endpoint and resource-level rate limits, backoff guidance. | Legitimate high-volume periods need tuning. | Repeated rate-limit exceeded events for status endpoint. |
-| T09 | Webhook registration points to unsafe target | Information disclosure | Events may be sent to private or unintended destinations. | Platform to webhook target | Webhook URL validation and explicit policy. | URL ownership and network policy need ongoing review. | Validation failures or unusual webhook registration churn. |
+| T09 | Webhook registration points to unsafe target | Information disclosure | Events may be sent to private or unintended destinations. | Platform to webhook target | Webhook URL validation, signed delivery, minimal payloads, and explicit policy. | URL ownership and network policy need ongoing review. | Validation failures, failed signature checks, or unusual webhook registration churn. |
 | T10 | Audit event is missing for denied request | Repudiation | Investigation cannot explain blocked or attempted access. | Product/domain services to audit log | Append-only audit model and deny event expectations. | Logging pipeline outages can occur. | Missing audit event anomaly for request ID. |
 | T11 | Audit metadata stores sensitive payload data | Information disclosure | Audit store becomes a sensitive payload repository. | Product/domain services to audit log | Sensitive data minimization and controlled metadata. | Review discipline needed as fields evolve. | Audit schema review finding or sensitive-field detection. |
 | T12 | Rate-limit counters are keyed only by IP address | Denial of service | One company can consume capacity or avoid fair attribution. | External API layer to rate-limit store | Layered limits by token, company, endpoint, and operation. | Shared networks can complicate analysis. | High usage not attributable to token/company. |
@@ -99,6 +99,7 @@ Out of scope:
 | Layered rate limiting | T01, T07, T08, T12 | `docs/rate-limiting-and-abuse-detection.md` |
 | Idempotency for write operations | T07, T17 | `docs/external-api-contract-examples.md` |
 | Webhook target validation | T09 | `docs/external-api-contract-examples.md` |
+| Signed webhook delivery | T09 | `docs/webhook-delivery-model.md` |
 | Stable client-facing error model | T14 | `docs/external-api-contract-examples.md` |
 | Correlation/request IDs | T10, T14 | `docs/audit-log-model.md` |
 | Operational alerting | T01, T04, T05, T08, T09, T18 | `docs/rate-limiting-and-abuse-detection.md` |
