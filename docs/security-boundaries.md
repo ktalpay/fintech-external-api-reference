@@ -9,10 +9,13 @@ Treating these as equivalent leads to control gaps and unstable integrations.
 External consumers depend on predictable interface behavior. Each external endpoint should have explicit versioning, input/output schemas, error semantics, and authorization requirements. This reduces accidental data exposure and integration fragility.
 
 ## Keep internal Swagger local/dev-only
-Automatically generated internal Swagger/OpenAPI surfaces can expose operational endpoints, experimental fields, and privileged actions not suitable for external use. Internal API docs should remain local/dev-only or restricted to internal trusted environments.
+Automatically produced internal Swagger/OpenAPI surfaces can expose operational endpoints, experimental fields, and privileged actions not suitable for external use. Internal API docs should remain local/dev-only or restricted to internal trusted environments.
 
 ## Separate external API documentation
 External API documentation should be curated and published separately from internal service docs. Separation reinforces boundary ownership, reduces accidental leakage, and allows stricter review workflows for externally visible contracts.
+
+## External contract examples
+External API contracts should be documented separately from internal APIs. Each external contract should explicitly include required scope, company/resource boundary, error model, audit expectation, and rate-limit expectation.
 
 ## Boundary between product modules and platform API
 Product/domain modules should execute business logic under a resolved company scope provided by the platform boundary. They should not independently infer external caller identity. This keeps authentication and authorization policies centralized and consistent.
