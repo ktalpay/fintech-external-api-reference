@@ -39,6 +39,7 @@ This repository does not provide:
 - `docs/problem-statement.md` — external API risk framing and failure modes
 - `docs/architecture-overview.md` — high-level architecture and request flow
 - `docs/company-scoped-api-key-model.md` — ownership and token model details
+- `docs/scope-and-permission-model.md` — external scope naming, evaluation rules, and endpoint permissions
 - `docs/security-boundaries.md` — boundary and contract guidance
 - `docs/adr/0001-use-company-scoped-api-keys.md` — ADR for key architecture decision
 
@@ -54,6 +55,7 @@ This repository does not provide:
 
 - Initial documentation baseline established.
 - Architecture framing and first ADR completed.
+- Scope and permission model documented.
 - No application code included in this stage.
 
 ## Disclaimer

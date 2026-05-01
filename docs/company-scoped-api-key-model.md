@@ -21,6 +21,17 @@ Raw API keys should not be stored in plaintext. Persist a one-way hash or equiva
 ## CompanyId resolution
 When a request includes `X-Api-Key`, the platform resolves `companyId` exclusively from token ownership metadata in the registry.
 
+## Company ownership vs scope authorization
+Company ownership and scope authorization answer different questions in the external API model.
+
+`companyId` determines the tenant boundary for the token. It defines which company's resources may be accessed and must be resolved from token metadata rather than caller-provided input.
+
+Scope determines the operation the token is allowed to perform. It defines whether the token can call a specific endpoint or action, such as reading accounts or creating payments.
+
+Both checks must pass:
+- A valid company-owned token without the required scope must still be denied.
+- A token with the required scope must still be denied if the requested resource is outside the token owner's company boundary.
+
 ## Token expiration
 Tokens should have explicit expiration to reduce long-term risk from dormant or leaked credentials. Expiry should be enforced at request time.
 
