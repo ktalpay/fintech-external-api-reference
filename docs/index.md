@@ -92,3 +92,4 @@ Early reference architecture documentation set.
 Release notes:
 - `docs/release-notes/v0.1.0.md`
 - `docs/release-notes/v0.2.0.md`
+- `docs/release-notes/v0.3.0.md`
