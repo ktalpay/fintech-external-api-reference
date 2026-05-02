@@ -63,6 +63,7 @@ Additional documentation from earlier milestones remains available under `docs/`
 - [Architecture decision records](docs/adr/README.md)
 - [Examples](examples/README.md)
 - [Minimal external OpenAPI sample](examples/openapi/external-api.sample.yaml)
+- [v0.3.0 release notes](docs/release-notes/v0.3.0.md)
 
 ## Non-Goals
 
