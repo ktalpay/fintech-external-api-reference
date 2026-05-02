@@ -1,155 +1,212 @@
-# Threat model
+# Threat Model
 
 ## Purpose
-A threat model helps review external API boundaries before implementation or exposure. For company-scoped fintech APIs, it provides a structured way to reason about tenant isolation, token misuse, over-privileged access, internal API exposure, auditability gaps, rate-limit and abuse scenarios, webhook risks, and operational response.
 
-This is a reference threat model. It is not a complete security certification or compliance assessment.
+This illustrative threat model reviews the external API boundary for a company-scoped fintech-style reference architecture. It focuses on API key authentication, token ownership, company scope resolution, endpoint-level scopes, rate limiting, auditability, external contract isolation, and safe error responses.
+
+This is a non-production reference and a set of security-focused design notes. It is not a complete security review, operational runbook, legal review, or regulatory assessment.
 
 ## Scope
+
 In scope:
+
 - external API endpoints under `/external/v1`,
 - API key authentication via `X-Api-Key`,
 - company-scoped authorization,
-- scope and permission evaluation,
-- audit logging,
+- endpoint-level scope and permission evaluation,
+- audit logging for allowed and denied decisions,
 - rate limiting and abuse detection,
-- token lifecycle and revocation,
-- webhook registration and management,
-- external API contract behavior.
+- token lifecycle checks for active, expired, revoked, and deactivated keys,
+- external API contract behavior and error response shape.
 
 Out of scope:
+
 - full cloud infrastructure threat modelling,
-- full IAM program design,
+- full identity and access management program design,
 - fraud detection,
-- legal/regulatory compliance mapping,
 - client-side application security,
-- production incident response process details.
+- detailed incident response procedures,
+- runtime implementation details.
+
+## Company-Scoped Ownership Rule
+
+External clients authenticate with `X-Api-Key`. The platform validates the presented key against the API key/token store, then resolves the token owner from trusted token metadata.
+
+The token owner determines the effective company scope. Callers must not provide arbitrary `CompanyId`, `company_id`, or `X-Company-Id` values to expand access. Client-provided identifiers can be request input only after the platform has resolved trusted company scope from token metadata.
+
+See the [request flow diagrams](architecture/request-flow.md) and [external API access model](architecture/external-api-access-model.md) for the order of authentication, company resolution, scope checks, rate limiting, data access, audit logging, and denial paths.
 
 ## Assets
+
 | Asset | Why it matters | Protection expectation |
 |---|---|---|
-| Raw API key | Grants machine-to-machine access if presented by a caller. | Show once at creation, never store or log. |
-| Token hash/fingerprint | Enables lookup and correlation without storing the raw secret. | Store securely and prevent reversal or misuse as a bearer credential. |
-| Token registry | Authoritative source for token status, company ownership, scopes, expiry, and lifecycle metadata. | Restrict write access and require request-time checks. |
-| Company ownership mapping | Defines tenant context for external requests. | Resolve from token metadata only; never trust caller-provided company context. |
-| External API contracts | Define stable external behavior and security expectations. | Keep separate from internal APIs and review before exposure. |
-| Payment request data | Can trigger sensitive financial workflows. | Minimize fields, validate strictly, audit sensitive operations. |
-| Account references | Identify company-linked financial resources. | Use stable references and enforce company-scoped lookup. |
-| Notification events | Inform clients about company-scoped changes. | Filter by resolved company and avoid unnecessary sensitive details. |
-| Webhook URLs | Define outbound delivery targets controlled by clients. | Validate targets and prevent unsafe callback destinations. |
-| Audit events | Provide traceability for access decisions and sensitive operations. | Append-only, queryable, access-controlled, and free of raw secrets. |
-| Rate-limit counters | Control fairness and abuse response. | Key by token, company, endpoint, and operation where appropriate. |
-| Request/correlation IDs | Connect edge requests to downstream processing and support cases. | Propagate consistently without embedding sensitive data. |
+| Raw API key | Grants machine-to-machine access when presented by a caller. | Display once at creation; never store or log. |
+| Token hash | Verifies a presented token without storing the raw secret. | Store as an authentication artifact; do not expose in logs or audit records. |
+| Token metadata | Carries owner, status, expiry, scopes, key prefix, and lifecycle timestamps. | Treat as authoritative platform-controlled authorization context. |
+| Company ownership mapping | Defines the tenant context for external requests. | Resolve from token metadata only. |
+| External API contract | Defines the documented external surface and error responses. | Keep separate from internal APIs and review intentionally. |
+| Product or platform data | Includes company-scoped resources such as accounts, banks, or payment requests. | Access only through resolved company scope and required endpoint scopes. |
+| Audit events | Explain allowed, denied, lifecycle, and rate-limit decisions. | Keep append-only, queryable, and free of raw secrets. |
+| Rate-limit counters | Support fair use and abuse response. | Key by token, company, endpoint, and operation type where appropriate. |
+| Correlation IDs | Connect client-facing responses to operational records. | Propagate consistently without embedding sensitive data. |
 
-## Trust boundaries
-| Boundary | What crosses the boundary | Primary risk | Required control |
+## Trust Boundaries
+
+| Boundary | What crosses it | Main risk | Design-level control |
 |---|---|---|---|
-| External client to API gateway / edge boundary | HTTPS request, API key, headers, route, parameters, payload. | Spoofed identity, malformed input, credential misuse, request flood. | TLS, token validation, input validation, rate limiting, stable error model. |
-| API gateway to token registry | Token hash/fingerprint lookup and token metadata response. | Incorrect token resolution or unauthorized metadata changes. | Secure lookup, restricted registry writes, explicit token lifecycle checks. |
-| API gateway to scope/permission evaluator | Resolved token, endpoint contract, required scope, and request context. | Over-privileged access or missing deny decision. | Deny-by-default scope evaluation and explicit endpoint metadata. |
-| External API layer to product/domain services | Resolved company context, validated request, resource references. | Downstream service trusting caller-provided company context. | Platform-resolved company context and company-scoped product queries. |
-| Product/domain services to audit log | Access decision, resource reference, request/correlation IDs, lifecycle events. | Missing audit trail or sensitive data in audit fields. | Append-only audit events and sensitive data minimization. |
-| External API layer to rate-limit store | Counter keys, request classification, token/company/endpoint usage. | Unfair throttling or bypass due to weak keys. | Layered counters by token, company, endpoint, operation, and deny patterns. |
-| Platform to webhook target | Outbound callback request and event payload. | Unsafe destination, spoofed delivery, data leakage, callback abuse. | Webhook target validation, signed company-scoped events, retry controls, audit events. |
+| External client to External Integration API | Request headers, `X-Api-Key`, route, query parameters, and body. | Spoofed identity, malformed input, credential misuse, request flood. | Validate tokens, reject untrusted company scope, apply stable error responses and rate limits. |
+| External Integration API to API key/token store | Key prefix, presented token verification, token metadata lookup. | Incorrect token resolution or stale lifecycle status. | Store only token hashes and check active, expired, revoked, and deactivated status at request time. |
+| External Integration API to scope evaluator | Resolved token metadata, required endpoint scope, request context. | Over-broad or missing authorization. | Use endpoint-level scopes and deny by default. |
+| External Integration API to rate-limit and abuse controls | Token, company, endpoint, operation, IP, and denial patterns. | Unfair throttling, bypass, or noisy integrations. | Use layered per-token, per-company, endpoint, and abuse-signal controls. |
+| External Integration API to product or platform data boundary | Resolved company scope, validated request, resource references. | Cross-company data access or downstream trust in caller input. | Pass platform-resolved company context into scoped product queries. |
+| External Integration API to audit log | Decision result, token identifier, resolved company scope, endpoint, correlation ID. | Missing traceability or sensitive data in audit records. | Record allowed and denied decisions with data minimization. |
+| Internal services to external contract publication | Endpoint paths, schemas, examples, error shapes. | Internal behavior exposed as an external contract. | Keep internal APIs separate from curated external OpenAPI contracts. |
 
-## Threat categories
-- **Spoofing**: an actor attempts to appear as a valid external client by using a stolen, guessed, expired, or revoked API key.
-- **Tampering**: a caller modifies request fields such as `companyId`, resource IDs, idempotency keys, or webhook URLs to alter authorization or processing.
-- **Repudiation**: a client disputes a request or operation, and the platform lacks reliable audit events to explain what happened.
-- **Information disclosure**: data from another company, internal implementation details, secrets, or sensitive payload fields are exposed through responses, logs, audit metadata, or webhooks.
-- **Denial of service**: accidental loops, aggressive polling, invalid-token floods, or abusive traffic degrade external APIs or downstream product services.
-- **Elevation of privilege**: a token gains more access than intended through broad scopes, shared ownership, internal endpoint exposure, or downstream trust in untrusted input.
+## Threat Entries
 
-## Threat scenarios
-| ID | Threat | Category | Impact | Affected boundary | Primary controls | Residual risk | Operational signal |
-|---|---|---|---|---|---|---|---|
-| T01 | Stolen API key is used from an unexpected environment | Spoofing | Unauthorized external access under a valid company context. | External client to API gateway / edge boundary | Token hashing, token lifecycle, audit logs, rate limiting, revocation. | Client storage quality varies. | Unusual token/company request pattern or source fingerprint. |
-| T02 | Caller submits another companyId in request payload | Tampering | Cross-tenant access attempt. | External client to API gateway / edge boundary | Company-scoped ownership, deny-by-default checks, resource filtering. | Product code can drift without review. | Company-boundary violation event. |
-| T03 | Token has broader scopes than required | Elevation of privilege | Larger blast radius if token is misused. | API gateway to scope/permission evaluator | Endpoint-level scopes, least privilege review, rotation scope review. | Business pressure may lead to broad grants. | Token uses endpoints outside expected pattern. |
-| T04 | Expired token continues to be used | Spoofing | Old integration or leaked token keeps attempting access. | API gateway to token registry | Request-time expiry check and audit events. | Clients may not rotate on schedule. | Expired token usage events. |
-| T05 | Revoked token continues to be used | Spoofing | Potential leakage or stale deployment after removal. | API gateway to token registry | Immediate revocation and alerting. | Caller may continue retrying. | Revoked token usage events. |
-| T06 | Internal API endpoint is accidentally exposed externally | Information disclosure | Internal fields or privileged actions become reachable. | External client to API gateway / edge boundary | Separate internal/external surfaces and explicit contracts. | Routing errors remain possible. | External traffic to unknown or internal route pattern. |
-| T07 | Payment creation endpoint is repeatedly called due to retry loop | Denial of service | Duplicate attempts and downstream pressure. | External API layer to product/domain services | Idempotency, write-operation limits, audit events. | Client retry behavior can still be defective. | Repeated idempotency keys or payment create throttles. |
-| T08 | Payment status endpoint is aggressively polled | Denial of service | Excessive read load and noisy client behavior. | External API layer to rate-limit store | Endpoint and resource-level rate limits, backoff guidance. | Legitimate high-volume periods need tuning. | Repeated rate-limit exceeded events for status endpoint. |
-| T09 | Webhook registration points to unsafe target | Information disclosure | Events may be sent to private or unintended destinations. | Platform to webhook target | Webhook URL validation, signed delivery, minimal payloads, and explicit policy. | URL ownership and network policy need ongoing review. | Validation failures, failed signature checks, or unusual webhook registration churn. |
-| T10 | Audit event is missing for denied request | Repudiation | Investigation cannot explain blocked or attempted access. | Product/domain services to audit log | Append-only audit model and deny event expectations. | Logging pipeline outages can occur. | Missing audit event anomaly for request ID. |
-| T11 | Audit metadata stores sensitive payload data | Information disclosure | Audit store becomes a sensitive payload repository. | Product/domain services to audit log | Sensitive data minimization and controlled metadata. | Review discipline needed as fields evolve. | Audit schema review finding or sensitive-field detection. |
-| T12 | Rate-limit counters are keyed only by IP address | Denial of service | One company can consume capacity or avoid fair attribution. | External API layer to rate-limit store | Layered limits by token, company, endpoint, and operation. | Shared networks can complicate analysis. | High usage not attributable to token/company. |
-| T13 | Resource lookup is performed before company boundary filtering | Information disclosure | Data from another tenant may be loaded or exposed. | External API layer to product/domain services | Resource-level company filtering and product service checks. | Query implementation mistakes remain possible. | Boundary mismatch or resource access anomaly. |
-| T14 | Error response leaks internal implementation details | Information disclosure | Clients learn internal service names, exceptions, or data shape. | External client to API gateway / edge boundary | Stable client-facing error model. | Debug behavior can be misconfigured. | Error body contains internal identifiers. |
-| T15 | One external token is shared across multiple companies | Elevation of privilege | Ownership and audit attribution become ambiguous. | API gateway to token registry | One-token-one-company ownership model. | Operational mistakes during issuance. | Token used for resources linked to multiple companies. |
-| T16 | Downstream service trusts caller-provided companyId | Tampering | Product service can bypass platform-resolved tenant context. | External API layer to product/domain services | Resolved company context and downstream company-scoped queries. | Service boundaries need periodic review. | Requests with conflicting company fields. |
-| T17 | Idempotency key is reused with conflicting payment payload | Tampering | Duplicate or inconsistent payment behavior. | External API layer to product/domain services | Idempotency scoped to token/company/endpoint and conflict response. | Client bugs can persist. | Idempotency conflict events. |
-| T18 | Token rotation leaves old token active indefinitely | Elevation of privilege | Stale credential remains usable after migration. | API gateway to token registry | Explicit lifecycle, bounded rotation window, last-used tracking. | Owners may delay migration. | Old token still used after expected retirement. |
+### API Key Leakage
 
-## Control mapping
-| Control | Threats reduced | Related document |
+**Threat:** A raw API key is copied from a client environment, support transcript, log line, browser history, or local configuration file.
+
+**Impact:** An actor with the raw key can attempt external API access under the token owner's company scope until the key is rotated, revoked, expired, or otherwise denied.
+
+**Design-level mitigation:** Display raw keys once, store only token hashes, keep raw tokens out of logs and audit records, support rotation and revocation, and record suspicious usage by token identifier or key prefix.
+
+**Related docs:** [API key lifecycle](token-lifecycle/api-key-lifecycle.md), [external API audit log](auditability/external-api-audit-log.md), [request flow diagrams](architecture/request-flow.md).
+
+### Stolen or Replayed API Keys
+
+**Threat:** A valid API key is reused from an unexpected system, replayed by a script, or sent repeatedly from unusual source patterns.
+
+**Impact:** Requests may succeed within the token owner's company scope and granted scopes, creating unauthorized reads or state-changing operations for that company.
+
+**Design-level mitigation:** Validate every request against stored token metadata, apply endpoint-level scope checks, use per-token and per-company rate limits, monitor unusual token usage patterns, and support quick revocation.
+
+**Related docs:** [Request flow diagrams](architecture/request-flow.md), [external API access model](architecture/external-api-access-model.md), [permission model](scopes/permission-model.md), [external API rate limiting](rate-limiting/external-api-rate-limiting.md), [API key lifecycle](token-lifecycle/api-key-lifecycle.md).
+
+### Expired or Revoked Token Reuse
+
+**Threat:** An expired, revoked, deactivated, unknown, or incorrectly rotated key continues to be used by an integration or actor.
+
+**Impact:** If lifecycle status is not checked at request time, stale credentials can remain usable. Even when denied, repeated attempts can create operational noise and investigation needs.
+
+**Design-level mitigation:** Check token lifecycle status on every request, fail closed for non-active keys, return a stable unauthorized response, and audit denied credential decisions with non-secret token identifiers where available.
+
+**Related docs:** [Invalid API key request flow](architecture/request-flow.md#invalid-expired-revoked-or-unknown-api-key), [API key lifecycle](token-lifecycle/api-key-lifecycle.md), [external API audit log](auditability/external-api-audit-log.md), [OpenAPI sample](../examples/openapi/external-api.sample.yaml).
+
+### Arbitrary Company Access Attempts
+
+**Threat:** A caller submits another company's identifier in a header, query parameter, request body, or resource reference to expand access beyond the token owner.
+
+**Impact:** If caller-provided company scope is trusted, the external API can expose or mutate resources outside the token owner's company boundary.
+
+**Design-level mitigation:** Resolve effective `CompanyId` only from token owner metadata, ignore or reject caller-provided company scope for authorization, check resource ownership inside the resolved company context, and audit company-scope violations.
+
+**Related docs:** [External API access model](architecture/external-api-access-model.md), [request flow diagrams](architecture/request-flow.md), [permission model](scopes/permission-model.md), [external API audit log](auditability/external-api-audit-log.md).
+
+### Excessive Request Volume or Abuse
+
+**Threat:** A client sends aggressive polling, retry loops, invalid-token floods, high write volume, or traffic patterns that exceed expected external API usage.
+
+**Impact:** Excessive volume can degrade external API reliability, increase downstream product load, hide credential misuse, or create avoidable operational response work.
+
+**Design-level mitigation:** Apply layered limits by token, company, endpoint, and operation type; use stricter controls for sensitive or state-changing operations; return stable `429` responses with retry guidance; and audit rate-limited decisions.
+
+**Related docs:** [Rate limit denial request flow](architecture/request-flow.md#rate-limit-or-abuse-detection-denial), [external API rate limiting](rate-limiting/external-api-rate-limiting.md), [external API audit log](auditability/external-api-audit-log.md), [OpenAPI sample](../examples/openapi/external-api.sample.yaml).
+
+### Insufficient Auditability
+
+**Threat:** Allowed, denied, lifecycle, scope-denied, rate-limited, or company-boundary decisions are missing from audit records or lack correlation IDs.
+
+**Impact:** Operators cannot explain what happened, which token was involved, which company scope was resolved, or why a request was allowed or denied.
+
+**Design-level mitigation:** Record structured audit events with timestamp, correlation ID, token identifier or key prefix, resolved `CompanyId`, endpoint, required scope, decision result, error classification, and response status. Keep raw tokens and sensitive payloads out of audit records.
+
+**Related docs:** [External API audit log](auditability/external-api-audit-log.md), [request flow diagrams](architecture/request-flow.md), [API key lifecycle](token-lifecycle/api-key-lifecycle.md).
+
+### Over-Broad Scopes
+
+**Threat:** An API key receives broader scopes than the integration needs, such as write access for a read-only integration or wildcard-style permissions.
+
+**Impact:** If the token is misused, the blast radius is larger and newly added endpoints may become reachable without enough review.
+
+**Design-level mitigation:** Use explicit endpoint-level scopes, separate read and write permissions, grant least privilege, deny missing scopes by default, and review scope grants during token creation and rotation.
+
+**Related docs:** [Scope denial request flow](architecture/request-flow.md#scope-or-permission-denial), [permission model](scopes/permission-model.md), [API key lifecycle](token-lifecycle/api-key-lifecycle.md), [OpenAPI sample](../examples/openapi/external-api.sample.yaml).
+
+### Internal Endpoint Exposure
+
+**Threat:** Internal controllers, internal Swagger, operational fields, or internal-only workflows are exposed through the external API surface.
+
+**Impact:** External clients may see unstable implementation details, privileged operations, internal identifiers, or behavior that was designed only for trusted platform callers.
+
+**Design-level mitigation:** Keep internal APIs separate from curated external API contracts, publish only reviewed external endpoints, use external DTOs, and align external documentation with stable request, response, error, scope, and rate-limit behavior.
+
+**Related docs:** [Internal vs external API](integration-boundaries/internal-vs-external-api.md), [OpenAPI sample](../examples/openapi/external-api.sample.yaml), [permission model](scopes/permission-model.md), [request flow diagrams](architecture/request-flow.md).
+
+### Weak Error Responses
+
+**Threat:** Client-facing errors reveal internal service names, stack traces, token validity details beyond the documented error class, database state, capacity details, or another company's usage.
+
+**Impact:** Attackers or curious clients can learn implementation details, improve probing attempts, or infer sensitive operational information from responses.
+
+**Design-level mitigation:** Use stable external error shapes, include correlation IDs, keep messages safe and generic, avoid raw secrets or internal exception details, and place detailed classification in audit records rather than client responses.
+
+**Related docs:** [Internal vs external API](integration-boundaries/internal-vs-external-api.md), [external API audit log](auditability/external-api-audit-log.md), [external API rate limiting](rate-limiting/external-api-rate-limiting.md), [OpenAPI sample](../examples/openapi/external-api.sample.yaml).
+
+## Control Mapping
+
+| Control | Threats reduced | Primary grouped reference |
 |---|---|---|
-| Company-scoped API key ownership | T02, T13, T15, T16 | `docs/company-scoped-api-key-model.md` |
-| Token hashing/fingerprinting | T01 | `docs/company-scoped-api-key-model.md` |
-| Explicit token lifecycle state | T04, T05, T18 | `docs/token-lifecycle-and-revocation.md` |
-| Request-time expiry check | T04 | `docs/token-lifecycle-and-revocation.md` |
-| Immediate revocation | T05, T18 | `docs/token-lifecycle-and-revocation.md` |
-| Endpoint-level scopes | T03, T06 | `docs/scope-and-permission-model.md` |
-| Deny-by-default authorization | T02, T03, T06, T16 | `docs/scope-and-permission-model.md` |
-| Resource-level company filtering | T02, T13, T16 | `docs/scope-and-permission-model.md` |
-| Explicit external API contracts | T06, T14 | `docs/external-api-contract-examples.md` |
-| Append-only audit logs | T01, T05, T10, T11 | `docs/audit-log-model.md` |
-| Sensitive data minimization | T11, T14 | `docs/audit-log-model.md` |
-| Layered rate limiting | T01, T07, T08, T12 | `docs/rate-limiting-and-abuse-detection.md` |
-| Idempotency for write operations | T07, T17 | `docs/external-api-contract-examples.md` |
-| Webhook target validation | T09 | `docs/external-api-contract-examples.md` |
-| Signed webhook delivery | T09 | `docs/webhook-delivery-model.md` |
-| Stable client-facing error model | T14 | `docs/external-api-contract-examples.md` |
-| Correlation/request IDs | T10, T14 | `docs/audit-log-model.md` |
-| Operational alerting | T01, T04, T05, T08, T09, T18 | `docs/rate-limiting-and-abuse-detection.md` |
+| Company-scoped token ownership | Arbitrary company access attempts, stolen or replayed keys | [External API access model](architecture/external-api-access-model.md) |
+| Request-flow ordering | Credential denial, scope denial, rate-limit denial, audited success | [Request flow diagrams](architecture/request-flow.md) |
+| Store only token hashes | API key leakage | [API key lifecycle](token-lifecycle/api-key-lifecycle.md) |
+| Explicit token lifecycle status | Expired or revoked token reuse | [API key lifecycle](token-lifecycle/api-key-lifecycle.md) |
+| Endpoint-level scopes | Over-broad scopes, arbitrary resource access | [Permission model](scopes/permission-model.md) |
+| Layered rate limits and abuse signals | Excessive request volume or abuse, replay patterns | [External API rate limiting](rate-limiting/external-api-rate-limiting.md) |
+| Structured audit events | Insufficient auditability, credential misuse investigation | [External API audit log](auditability/external-api-audit-log.md) |
+| External contract isolation | Internal endpoint exposure, weak error responses | [Internal vs external API](integration-boundaries/internal-vs-external-api.md) |
+| Stable external error responses | Weak error responses and probing resistance | [OpenAPI sample](../examples/openapi/external-api.sample.yaml) |
 
-## Residual risk
-Some risk remains even after these controls are applied:
-- client-side credential storage quality varies,
-- partner retry behavior can still be defective,
-- audit logs need operational review to be useful,
-- rate limits require tuning,
-- webhook URL validation policy needs ownership,
-- insider or operational mistakes remain possible,
-- contract documentation can drift unless maintained.
+## Operational Monitoring Signals
 
-## Operational monitoring signals
-- Spike in authentication failures.
-- Repeated missing-scope denials.
-- Repeated company-boundary violations.
-- Revoked token usage.
-- Expired token usage.
-- Repeated rate-limit exceeded events.
-- Webhook registration churn.
-- Payment creation idempotency conflicts.
-- Unusual request patterns by token/company.
-- Missing audit event anomalies.
+- Spike in missing, invalid, expired, revoked, or deactivated API key decisions.
+- Repeated missing-scope denials for the same token, company, or endpoint.
+- Repeated attempts to provide or override company scope.
+- Unusual request patterns by token, company, endpoint, source IP, or user agent.
+- Frequent `429 Too Many Requests` responses or soft-limit warnings.
+- Write-operation retry loops or idempotency conflicts.
+- External traffic to unknown, internal-looking, or undocumented routes.
+- Error responses that include internal identifiers or implementation details.
+- Missing audit event anomalies for known request correlation IDs.
 
-## Secure design principles used
-- Least privilege.
-- Deny by default.
-- Defense in depth.
-- Fail closed.
-- Separation of internal and external surfaces.
-- Tenant isolation by platform-resolved context.
-- Auditability by design.
-- Sensitive data minimization.
-- Explicit lifecycle management.
+## Common Mistakes
 
-## Common mistakes
 - Treating API key authentication as sufficient authorization.
-- Trusting request `companyId`.
-- Exposing internal Swagger externally.
-- Not modelling denied requests.
-- Not threat-modelling webhook management.
-- Not auditing token lifecycle events.
-- Relying only on IP-based controls.
-- Omitting idempotency for payment creation.
-- Allowing broad scopes without review.
-- Logging sensitive payloads in audit metadata.
+- Trusting request-provided `CompanyId`.
+- Allowing one external token to span multiple company owners.
+- Granting broad scopes before endpoint-level review.
+- Exposing internal Swagger or internal controllers as external documentation.
+- Returning internal exception details to external clients.
+- Logging raw API keys, token hashes, or sensitive payloads.
+- Auditing only successful requests.
+- Relying only on IP-based rate limits.
+- Leaving rotated tokens active without a bounded transition plan.
 
-## Implementation notes
-This model is language-agnostic and conceptual. It does not define application code.
+## Review Checklist
 
-Teams may adapt this threat model into STRIDE reviews, security design reviews, architecture decision records, or platform risk registers.
+- [ ] Does every external request authenticate with `X-Api-Key` before company scope is resolved?
+- [ ] Is effective company scope resolved from token owner metadata only?
+- [ ] Are missing, invalid, expired, revoked, and deactivated keys denied before data access?
+- [ ] Does every external endpoint declare and enforce a required scope?
+- [ ] Are rate limits keyed by token and company, with endpoint or operation limits where useful?
+- [ ] Are allowed and denied decisions audited with correlation IDs and safe metadata?
+- [ ] Are external error responses stable and free of internal details?
+- [ ] Are internal APIs and internal Swagger kept separate from external contracts?
+- [ ] Does the illustrative OpenAPI contract match the documented authentication and error patterns?
+
+## Implementation Notes
+
+This model is language-agnostic and conceptual. It does not define application code, data schemas, cloud infrastructure, or operational procedures.
+
+Teams can adapt these design-level mitigations into security design reviews, implementation checklists, or platform risk registers.
