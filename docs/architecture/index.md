@@ -5,6 +5,7 @@ This section describes the core external API access architecture for a fintech-s
 Start with:
 
 - [External API access model](external-api-access-model.md)
+- [Request flow diagrams](request-flow.md) - Concise sequence diagrams for authentication, company resolution, scope checks, rate limiting, audit logging, and denial paths.
 
 Related existing documents:
 

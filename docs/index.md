@@ -36,6 +36,7 @@ Recommended reading order:
 | `docs/problem-statement.md` | External API risk framing and failure modes. | Start here to understand the problem this reference architecture addresses. |
 | `docs/architecture-overview.md` | High-level actors, request flow, and control points. | Read before reviewing detailed security models. |
 | `docs/architecture/external-api-access-model.md` | Core external API request model and company scope resolution. | Read when designing API key based request authorization. |
+| `docs/architecture/request-flow.md` | Sequence diagrams for successful, credential-denied, scope-denied, and rate-limited external API requests. | Read when tracing how external API controls are applied in order. |
 | `docs/security-boundaries.md` | Internal/external API separation and boundary guidance. | Read when deciding what should be exposed externally. |
 | `docs/integration-boundaries/internal-vs-external-api.md` | Internal API vs external API contract boundary strategy. | Read when deciding how to expose or document APIs externally. |
 | `docs/company-scoped-api-key-model.md` | Token ownership and company resolution. | Read when designing tenant-scoped API key authorization. |
