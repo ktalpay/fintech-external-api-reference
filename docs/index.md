@@ -50,6 +50,7 @@ Recommended reading order:
 | `docs/token-lifecycle/api-key-lifecycle.md` | API key lifecycle, hashed storage, and operational failure cases. | Read when defining token lifecycle behavior. |
 | `docs/external-api-contract-examples.md` | Example endpoint contracts and error conventions. | Read when documenting externally visible endpoints. |
 | `examples/openapi/external-api.sample.yaml` | Minimal OpenAPI contract for generic external endpoints. | Read when reviewing example external API documentation. |
+| `docs/error-code-reference.md` | Stable external error shape, error codes, HTTP status mapping, retry guidance, and audit expectations. | Read when defining client-facing error behavior. |
 | `docs/threat-model.md` | Threat scenarios, controls, residual risks, and monitoring signals. | Read during security review or release readiness review. |
 | `docs/review-checklist.md` | Implementation-neutral readiness checklist. | Use for endpoint readiness review before exposure or major contract changes. |
 
