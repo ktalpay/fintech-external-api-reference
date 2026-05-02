@@ -67,6 +67,9 @@ Recommended reading order:
 | `docs/adr/0004-use-explicit-token-lifecycle-and-revocation-model.md` | Use explicit token lifecycle and revocation controls. | Token operations and incident response. |
 | `docs/adr/0005-use-explicit-external-api-contracts.md` | Use explicit external API contracts. | External endpoint documentation. |
 | `docs/adr/0006-use-threat-model-for-external-api-boundaries.md` | Maintain a threat model for external API boundaries. | Security review and residual risk. |
+| `docs/adr/0007-use-signed-webhook-delivery-model.md` | Use signed webhook delivery for external events. | Webhook authenticity and delivery integrity. |
+| `docs/adr/0008-use-stable-external-error-codes.md` | Use stable external error codes. | Client-facing error behavior. |
+| `docs/adr/0009-use-integration-guide-for-external-api-onboarding.md` | Use an integration guide for onboarding. | External client integration guidance. |
 | `docs/adr/0010-use-review-checklist-for-external-api-readiness.md` | Use a review checklist for external API readiness. | Endpoint readiness and cross-cutting control review. |
 
 ## Suggested reviewer checklist

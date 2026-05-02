@@ -67,7 +67,7 @@ Additional documentation from earlier milestones remains available under `docs/`
 ## Non-Goals
 
 - This is not a banking compliance framework.
-- This is not a complete production implementation.
+- This is not a deployable runtime implementation.
 - This does not provide legal, regulatory, or audit advice.
 - This is not tied to any real company or customer.
 - This does not define a cloud-provider deployment model.
@@ -77,8 +77,8 @@ Additional documentation from earlier milestones remains available under `docs/`
 
 Early reference architecture.
 
-The repository is documentation-first and intentionally implementation-light. Documents and examples are suitable for public review, adaptation, and discussion, but they are not a substitute for production engineering, security review, or organization-specific governance.
+The repository is documentation-first and intentionally implementation-light. Documents and examples are suitable for public review, adaptation, and discussion, but they are not a substitute for implementation engineering, security review, or organization-specific governance.
 
 ## Disclaimer
 
-This repository provides generic reference architecture documentation only. It does not provide production, legal, compliance, regulatory, audit, security certification, or financial advice, and it does not guarantee suitability for any regulated environment.
+This repository provides generic reference architecture documentation only. It does not provide deployment, legal, compliance, regulatory, audit, security assurance, or financial advice, and it does not guarantee suitability for any regulated environment.
