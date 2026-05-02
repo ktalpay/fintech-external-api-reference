@@ -2,7 +2,11 @@ openapi: 3.0.3
 info:
   title: External Fintech API Sample
   version: 1.0.0
-  description: Minimal illustrative external API contract for company-scoped API key access.
+  description: >
+    Minimal illustrative OpenAPI contract for company-scoped API key access.
+    `X-Api-Key` resolves to a token owner, and the token owner determines
+    the effective company scope. External callers must not choose arbitrary
+    company scope.
 servers:
   - url: https://api.example.com
     description: Example external API host
@@ -10,15 +14,18 @@ security:
   - ApiKeyAuth: []
 tags:
   - name: Banks
+    description: Generic bank directory examples.
   - name: Accounts
+    description: Company-scoped account read examples.
   - name: Payments
+    description: Company-scoped payment request examples.
 paths:
   /external/v1/banks:
     get:
       tags:
         - Banks
       summary: List supported banks
-      description: Returns banks available to the resolved company scope.
+      description: Returns banks available to the company scope resolved from the API key token owner.
       operationId: listExternalBanks
       security:
         - ApiKeyAuth: []
@@ -52,7 +59,7 @@ paths:
       tags:
         - Accounts
       summary: List accounts
-      description: Returns accounts belonging to the resolved company scope.
+      description: Returns accounts belonging to the company scope resolved from the API key token owner.
       operationId: listExternalAccounts
       security:
         - ApiKeyAuth: []
@@ -82,12 +89,58 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /external/v1/payments/{payment_id}:
+    get:
+      tags:
+        - Payments
+      summary: Get a payment request
+      description: Returns one payment request when it is visible inside the company scope resolved from the API key token owner.
+      operationId: getExternalPayment
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          description: External payment request identifier.
+          schema:
+            type: string
+          example: pay_demo_001
+      responses:
+        "200":
+          description: Payment request returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Payment"
+              example:
+                data:
+                  id: pay_demo_001
+                  source_account_id: acct_demo_001
+                  amount:
+                    currency: GBP
+                    value: "25.00"
+                  reference: invoice-1001
+                  status: pending
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /external/v1/payments:
     post:
       tags:
         - Payments
       summary: Create a payment request
-      description: Creates a payment request inside the resolved company scope.
+      description: Creates a payment request inside the company scope resolved from the API key token owner.
       operationId: createExternalPayment
       security:
         - ApiKeyAuth: []
@@ -128,6 +181,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
         "429":
           $ref: "#/components/responses/TooManyRequests"
 components:
@@ -136,43 +191,85 @@ components:
       type: apiKey
       in: header
       name: X-Api-Key
-      description: Platform-issued API key. The platform resolves company scope from token metadata.
+      description: >
+        Platform-issued API key. The platform resolves the token owner from
+        `X-Api-Key`; the token owner determines the effective company scope.
+        External callers must not provide arbitrary company scope.
   responses:
     Unauthorized:
-      description: Missing, invalid, revoked, or expired API key.
+      description: Missing, unknown, invalid, expired, revoked, or non-active API key.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           examples:
-            missingApiKey:
-              summary: Missing API key
+            authenticationFailed:
+              summary: Missing or unknown API key
               value:
-                error:
-                  code: missing_api_key
-                  message: API key is required.
-                  correlation_id: req_01HZXAMPLE000000000000001
-            expiredApiKey:
+                error: authentication_failed
+                message: Provide a valid API key.
+                requestId: req_01HZXAMPLE000000000000001
+            tokenExpired:
               summary: Expired API key
               value:
-                error:
-                  code: expired_api_key
-                  message: API key is not valid for this request.
-                  correlation_id: req_01HZXAMPLE000000000000002
+                error: token_expired
+                message: API key is not valid for this request.
+                requestId: req_01HZXAMPLE000000000000002
+            tokenRevoked:
+              summary: Revoked API key
+              value:
+                error: token_revoked
+                message: API key is not valid for this request.
+                requestId: req_01HZXAMPLE000000000000003
     Forbidden:
-      description: API key is valid but does not have the required scope.
+      description: API key is valid but is not authorized for the operation or company boundary.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           examples:
-            missingScope:
-              summary: Missing scope
+            insufficientScope:
+              summary: Insufficient scope
               value:
-                error:
-                  code: missing_scope
-                  message: API key does not have permission to access this endpoint.
-                  correlation_id: req_01HZXAMPLE000000000000003
+                error: insufficient_scope
+                message: The token does not include the required scope for this endpoint.
+                requestId: req_01HZXAMPLE000000000000004
+                details:
+                  requiredScope: payments:create
+            companyBoundaryViolation:
+              summary: Company boundary violation
+              value:
+                error: company_boundary_violation
+                message: Request is outside the resolved company scope.
+                requestId: req_01HZXAMPLE000000000000005
+    NotFound:
+      description: Resource is not visible inside the resolved company scope.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            resourceNotFound:
+              summary: Resource not found
+              value:
+                error: resource_not_found
+                message: Resource was not found.
+                requestId: req_01HZXAMPLE000000000000006
+    ValidationError:
+      description: Request validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            validationFailed:
+              summary: Validation failed
+              value:
+                error: validation_failed
+                message: Request validation failed.
+                requestId: req_01HZXAMPLE000000000000007
+                details:
+                  field: amount.value
     TooManyRequests:
       description: Rate limit exceeded.
       headers:
@@ -190,10 +287,9 @@ components:
             rateLimited:
               summary: Too many requests
               value:
-                error:
-                  code: rate_limit_exceeded
-                  message: Too many requests. Retry after the indicated interval.
-                  correlation_id: req_01HZXAMPLE000000000000004
+                error: rate_limit_exceeded
+                message: Too many requests. Retry after the indicated interval.
+                requestId: req_01HZXAMPLE000000000000008
   schemas:
     Bank:
       type: object
@@ -300,20 +396,22 @@ components:
       type: object
       required:
         - error
+        - message
+        - requestId
       properties:
         error:
+          type: string
+          description: Stable machine-readable error code.
+          example: insufficient_scope
+        message:
+          type: string
+          description: Safe human-readable message.
+          example: The token does not include the required scope for this endpoint.
+        requestId:
+          type: string
+          description: Request correlation identifier for support and audit lookup.
+          example: req_01HZXAMPLE000000000000004
+        details:
           type: object
-          required:
-            - code
-            - message
-            - correlation_id
-          properties:
-            code:
-              type: string
-              example: missing_scope
-            message:
-              type: string
-              example: API key does not have permission to access this endpoint.
-            correlation_id:
-              type: string
-              example: req_01HZXAMPLE000000000000003
+          description: Optional safe structured context for validation or authorization errors.
+          additionalProperties: true
